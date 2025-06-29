@@ -5,9 +5,26 @@ import React from "react";
 import TaskDrawer from "../../common/TaskDrawer";
 import { useState } from "react";
 
-function IssueList({ issues }: { issues: Task[] }) {
+function IssueList({ issues, projectId }: { issues: Task[]; projectId: string }) {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const handleCloseDrawer = () => setSelectedTask(null);
+   const handleClick = async (id: string) => {
+    try {
+      const res = await fetch(
+        `http://localhost:3001/api/projects/${projectId}/${id}`, // ✨ 여기가 API 경로
+        { cache: "no-store" } // 캐시 무효화
+      );
+
+      if (!res.ok) throw new Error("이슈 상세 조회 실패");
+
+      const task: Task = await res.json();
+      setSelectedTask(task);
+    } catch (error) {
+      console.error("에러 발생:", error);
+    }
+  };
+
+  
   return (
     <div className="min-h-screen px-12 py-8">
       <h1 className="text-3xl font-bold text-slate-800 mb-6">📋 목록</h1>
