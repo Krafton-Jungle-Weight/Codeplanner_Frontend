@@ -72,7 +72,7 @@ const menuItems = [
     {
         title: "목록",
         icon: TableOfContents,
-        url: "projects/demo/list",
+        url: "./list",
     },
     {
         title: "코드",

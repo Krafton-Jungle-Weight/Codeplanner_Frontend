@@ -2,18 +2,21 @@ import KanbanBoard from "@/src/components/dashboard/board/KanbanBoard";
 import { Task } from "@/src/type";
 import "./page.css";
 
-export default async function Page({params}: {params: {projectId: string}}) {
-    const { projectId } = await params;
-    console.log(projectId);
+export default async function Page({ params }: { params: { projectId: string } }) {
+    const { projectId } = params; // ← 여기 await 제거
+
+    console.log("projectId:", projectId);
 
     const res = await fetch(
-        `http://localhost:5000/api/projects/${projectId}/issues`,
-        { next: { revalidate: 60 } }
+        `http://localhost:3001/api/projects/${projectId}/issues`,
+        { next: { revalidate: 60 } } // ISR 옵션 굿!
     );
+
     if (!res.ok) {
-        console.log(res);
+        console.error(res); // ← 콘솔도 error 쪽이 더 낫다!
         throw new Error("Failed to fetch issues");
     }
+
     const issues: Task[] = await res.json();
 
     return (
