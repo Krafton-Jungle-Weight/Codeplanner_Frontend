@@ -18,13 +18,27 @@ import {
 import { arrayMove, SortableContext } from "@dnd-kit/sortable";
 import { createPortal } from "react-dom";
 import TaskCard from "./TaskCard";
+import { useParams } from "next/navigation";
 
-function KanbanBoard() {
-    const [columns, setColumns] = useState<Column[]>([]);
+function KanbanBoard({ issues, projectId }: { issues: Task[]; projectId: string }) {
+    const [columns, setColumns] = useState<Column[]>([
+        {
+            id: "TODO",
+            title: "Todo",
+        },
+        {
+            id: "IN_PROGRESS",
+            title: "In Progress",
+        },
+        {
+            id: "DONE",
+            title: "Done",
+        },
+    ]);
     const columnsId = useMemo(() => columns.map((col) => col.id), [columns]);
     const [isClient, setIsClient] = useState(false);
 
-    const [tasks, setTasks] = useState<Task[]>([]);
+    const [tasks, setTasks] = useState<Task[]>(issues);
 
     const [activeColumn, setActiveColumn] = useState<Column | null>(null);
     const [activeTask, setActiveTask] = useState<Task | null>(null);
@@ -42,45 +56,45 @@ function KanbanBoard() {
     }, []);
 
     return (
-        <div className="h-screen w-full overflow-x-auto overflow-y-hidden px-[40px]">
-            <DndContext
-                sensors={sensors}
-                onDragStart={onDragStart}
-                onDragEnd={onDragEnd}
-                onDragOver={onDragOver}
-            >
-                <div className="flex gap-4 min-w-max py-4">
-                    <div className="flex gap-4">
-                        <SortableContext items={columnsId}>
-                            {columns.map((col) => (
-                                <ColumnContainer
-                                    key={col.id}
-                                    column={col}
-                                    deleteColumn={deleteColumn}
-                                    updateColumn={updateColumn}
-                                    createTask={createTask}
-                                    tasks={tasks.filter(
-                                        (task) => task.columnId === col.id
-                                    )}
-                                    deleteTask={deleteTask}
-                                    updateTask={updateTask}
-                                />
-                            ))}
-                        </SortableContext>
+        <div className="w-full overflow-x-auto overflow-y-hidden px-[40px]">
+            {isClient && (
+                <DndContext
+                    sensors={sensors}
+                    onDragStart={onDragStart}
+                    onDragEnd={onDragEnd}
+                    onDragOver={onDragOver}
+                >
+                    <div className="flex gap-4 min-w-max py-4">
+                        <div className="flex gap-4">
+                            <SortableContext items={columnsId}>
+                                {columns.map((col) => (
+                                    <ColumnContainer
+                                        key={col.id}
+                                        column={col}
+                                        deleteColumn={deleteColumn}
+                                        updateColumn={updateColumn}
+                                        createTask={createTask}
+                                        tasks={tasks.filter(
+                                            (task) => task.status === col.id
+                                        )}
+                                        deleteTask={deleteTask}
+                                        updateTask={updateTask}
+                                    />
+                                ))}
+                            </SortableContext>
+                        </div>
+                        <button
+                            onClick={() => {
+                                createNewColumn();
+                            }}
+                            className="h-[60px] w-[350px] min-w-[350px] cursor-pointer rounded-lg bg-[#f8f8f8] border-2 border-gray-300 p-4 ring-rose-500 hover:ring-2 flex gap-2 flex-shrink-0"
+                        >
+                            <PlusIcon />
+                            Add Column
+                        </button>
                     </div>
-                    <button
-                        onClick={() => {
-                            createNewColumn();
-                        }}
-                        className="h-[60px] w-[350px] min-w-[350px] cursor-pointer rounded-lg bg-[#f8f8f8] border-2 border-gray-300 p-4 ring-rose-500 hover:ring-2 flex gap-2 flex-shrink-0"
-                    >
-                        <PlusIcon />
-                        Add Column
-                    </button>
-                </div>
 
-                {isClient &&
-                    createPortal(
+                    {createPortal(
                         <DragOverlay>
                             {activeColumn && (
                                 <ColumnContainer
@@ -90,7 +104,7 @@ function KanbanBoard() {
                                     createTask={createTask}
                                     tasks={tasks.filter(
                                         (task) =>
-                                            task.columnId === activeColumn.id
+                                            task.status === activeColumn.id
                                     )}
                                     deleteTask={deleteTask}
                                     updateTask={updateTask}
@@ -106,15 +120,56 @@ function KanbanBoard() {
                         </DragOverlay>,
                         document.body
                     )}
-            </DndContext>
+                </DndContext>
+            )}
+
+            {/* 서버에서 렌더링할 정적 버전 */}
+            {!isClient && (
+                <div className="flex gap-4 min-w-max py-4">
+                    <div className="flex gap-4">
+                        {columns.map((col) => (
+                            <div
+                                key={col.id}
+                                className="bg-[#f8f8f8] w-[350px] h-[3000px] max-h-[3000px] rounded-md flex flex-col"
+                            >
+                                <div className="flex items-center justify-between bg-[#f8f8f8] text-md h-[60px] rounded-md rounded-b-none p-3 font-bold border-[#f8f8f8] border-4">
+                                    <div className="flex gap-2">
+                                        <div className="flex justify-center items-center bg-[#f8f8f8] px-2 py-1 text-sm rounded-full">
+                                            0
+                                        </div>
+                                        {col.title}
+                                    </div>
+                                </div>
+                                <div className="flex flex-grow flex-col gap-4 p-2 overflow-x-hidden overflow-y-auto">
+                                    <button className="flex gap-2 items-center justify-center w-full border-2 border-dashed border-gray-300 rounded-md p-4 hover:bg-gray-100 hover:border-gray-400 transition-colors mt-2">
+                                        <PlusIcon />
+                                        Add Task
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                    <button className="h-[60px] w-[350px] min-w-[350px] cursor-pointer rounded-lg bg-[#f8f8f8] border-2 border-gray-300 p-4 ring-rose-500 hover:ring-2 flex gap-2 flex-shrink-0">
+                        <PlusIcon />
+                        Add Column
+                    </button>
+                </div>
+            )}
         </div>
     );
 
     function createTask(columnId: Id) {
         const newTask: Task = {
             id: generateId(),
-            columnId,
-            content: `Task ${tasks.length + 1}`,
+            project_id: projectId,
+            title: "2",
+            description: "3",
+            issue_type: "4",
+            status: columnId as string,
+            assignee_id: "5",
+            reporter_id: "6",
+            start_date: "7",
+            due_date: "8",
         };
         setTasks([...tasks, newTask]);
     }
@@ -142,7 +197,7 @@ function KanbanBoard() {
     function deleteColumn(id: Id) {
         setColumns(columns.filter((col) => col.id !== id));
 
-        const newTasks = tasks.filter((task) => task.columnId !== id);
+        const newTasks = tasks.filter((task) => task.status !== id);
         setTasks(newTasks);
     }
 
@@ -170,61 +225,62 @@ function KanbanBoard() {
         setActiveTask(null);
         const { active, over } = event;
         if (!over) return;
-        const activeColumnId = active.id;
-        const overColumnId = over.id;
 
-        if (activeColumnId === overColumnId) return;
-        setColumns((columns) => {
-            const activeColumnIndex = columns.findIndex(
-                (col) => col.id === activeColumnId
-            );
+        const activeId = active.id;
+        const overId = over.id;
 
-            const overColumnIndex = columns.findIndex(
-                (col) => col.id === overColumnId
-            );
-            return arrayMove(columns, activeColumnIndex, overColumnIndex);
-        });
+        if (activeId === overId) return;
+
+        // Column 드래그만 처리
+        const isActiveColumn = active.data.current?.type === "Column";
+        const isOverColumn = over.data.current?.type === "Column";
+
+        if (isActiveColumn && isOverColumn) {
+            setColumns((columns) => {
+                const activeColumnIndex = columns.findIndex(
+                    (col) => col.id === activeId
+                );
+                const overColumnIndex = columns.findIndex(
+                    (col) => col.id === overId
+                );
+                return arrayMove(columns, activeColumnIndex, overColumnIndex);
+            });
+        }
     }
 
     function onDragOver(event: DragOverEvent) {
         const { active, over } = event;
         if (!over) return;
-        const activeTaskId = active.id;
-        const overTaskId = over.id;
+        const activeId = active.id;
+        const overId = over.id;
 
-        if (activeTaskId === overTaskId) return;
+        if (activeId === overId) return;
 
-        const isActiveTask = active.data.current?.type === "Task";
+        const isActiveATask = active.data.current?.type === "Task";
         const isOverTask = over.data.current?.type === "Task";
 
-        if (!isActiveTask) return;
+        if (!isActiveATask) return;
 
-        if (isActiveTask && isOverTask) {
+        if (isActiveATask && isOverTask) {
             setTasks((tasks) => {
-                const activeTaskIndex = tasks.findIndex(
-                    (t) => t.id === activeTaskId
-                );
-                const overTaskIndex = tasks.findIndex(
-                    (t) => t.id === overTaskId
-                );
+                const activeIndex = tasks.findIndex((t) => t.id === activeId);
+                const overIndex = tasks.findIndex((t) => t.id === overId);
 
-                tasks[activeTaskIndex].columnId = tasks[overTaskIndex].columnId;
+                tasks[activeIndex].status = tasks[overIndex].status;
 
-                return arrayMove(tasks, activeTaskIndex, overTaskIndex);
+                return arrayMove(tasks, activeIndex, overIndex);
             });
         }
 
         const isOverAColumn = over.data.current?.type === "Column";
 
-        if (isActiveTask && isOverAColumn) {
+        if (isActiveATask && isOverAColumn) {
             setTasks((tasks) => {
-                const activeTaskIndex = tasks.findIndex(
-                    (t) => t.id === activeTaskId
-                );
+                const activeIndex = tasks.findIndex((t) => t.id === activeId);
 
-                tasks[activeTaskIndex].columnId = overTaskId;
+                tasks[activeIndex].status = overId as string;
 
-                return arrayMove(tasks, activeTaskIndex, activeTaskIndex);
+                return arrayMove(tasks, activeIndex, activeIndex);
             });
         }
     }
