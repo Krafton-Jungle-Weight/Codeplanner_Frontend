@@ -19,6 +19,7 @@ import { arrayMove, SortableContext } from "@dnd-kit/sortable";
 import { createPortal } from "react-dom";
 import TaskCard from "./TaskCard";
 import { useParams } from "next/navigation";
+import TaskDrawer from "../../common/TaskDrawer";
 
 function KanbanBoard({ issues, projectId }: { issues: Task[]; projectId: string }) {
     const [columns, setColumns] = useState<Column[]>([
@@ -42,6 +43,7 @@ function KanbanBoard({ issues, projectId }: { issues: Task[]; projectId: string 
 
     const [activeColumn, setActiveColumn] = useState<Column | null>(null);
     const [activeTask, setActiveTask] = useState<Task | null>(null);
+    const [selectedTask, setSelectedTask] = useState<Task | null>(null);
     const sensors = useSensors(
         useSensor(PointerSensor, {
             activationConstraint: {
@@ -79,6 +81,8 @@ function KanbanBoard({ issues, projectId }: { issues: Task[]; projectId: string 
                                         )}
                                         deleteTask={deleteTask}
                                         updateTask={updateTask}
+                                        onTaskClick={(task) => setSelectedTask(task)}
+
                                     />
                                 ))}
                             </SortableContext>
@@ -108,6 +112,8 @@ function KanbanBoard({ issues, projectId }: { issues: Task[]; projectId: string 
                                     )}
                                     deleteTask={deleteTask}
                                     updateTask={updateTask}
+                                    onTaskClick={setSelectedTask}
+
                                 />
                             )}
                             {activeTask && (
@@ -115,6 +121,7 @@ function KanbanBoard({ issues, projectId }: { issues: Task[]; projectId: string 
                                     task={activeTask}
                                     deleteTask={deleteTask}
                                     updateTask={updateTask}
+                                    onTaskClick={setSelectedTask}
                                 />
                             )}
                         </DragOverlay>,
@@ -154,6 +161,14 @@ function KanbanBoard({ issues, projectId }: { issues: Task[]; projectId: string 
                         Add Column
                     </button>
                 </div>
+            )}
+
+            {/* TaskDrawer */}
+            {selectedTask && (
+                <TaskDrawer 
+                    task={selectedTask} 
+                    onClose={() => setSelectedTask(null)} 
+                />
             )}
         </div>
     );

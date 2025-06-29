@@ -14,6 +14,7 @@ interface Props {
     updateTask: (id: Id, content: string) => void;
     deleteTask: (id: Id) => void;
     tasks: Task[];
+    onTaskClick: (task: Task) => void; // ⭐️ 드로어 띄우기용
 }
 
 function ColumnContainer(props: Props) {
@@ -25,6 +26,7 @@ function ColumnContainer(props: Props) {
         tasks,
         deleteTask,
         updateTask,
+        onTaskClick, // 추가
     } = props;
 
     const [editMode, setEditMode] = useState(false);
@@ -116,6 +118,7 @@ function ColumnContainer(props: Props) {
                             task={task}
                             deleteTask={deleteTask}
                             updateTask={updateTask}
+                            onTaskClick={onTaskClick} // ✅ 수정! ← 요게 정답
                         />
                     ))}
                 </SortableContext>
