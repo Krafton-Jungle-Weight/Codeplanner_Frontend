@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import TaskDrawer from "../common/TaskDrawer";
 import { useParams } from "next/navigation";
+import AddIssueModal from "../../board/_components/AddIssueModal";
 
 // 이슈 상세 모달
 function IssueDetailModal({ open, onOpenChange, issue, assignee, reporter, labels, comments }: {
@@ -104,14 +105,15 @@ export default function IssueList() {
   const [search, setSearch] = useState("");
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [showDetail, setShowDetail] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
   const params = useParams();
 const projectId = params?.projectId as string;
 
   const handleCloseDrawer = () => setSelectedTask(null);
 
   useEffect(() => {
-    // fetch(`http://localhost:3001/api/projects/${projectId}/issues`, {
-    fetch(`http://localhost:5000/api/projects/${projectId}/issues`, {
+    fetch(`http://localhost:3001/api/projects/${projectId}/issues`, {
+    // fetch(`http://localhost:5000/api/projects/${projectId}/issues`, {
       credentials: 'include',
     })
       .then((res) => {
@@ -136,7 +138,7 @@ const projectId = params?.projectId as string;
       <Header />
       <main className="container mx-auto px-6 py-8">
         <div className="flex flex-col md:flex-row gap-4 items-center justify-between mb-6">
-          <Button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2">
+          <Button className="hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2" onClick={() => setShowAddModal(true)} >
             <PlusIcon /> 이슈 추가
           </Button>
           <div className="flex-1 max-w-md">
@@ -191,6 +193,8 @@ const projectId = params?.projectId as string;
         {selectedTask && (
           <TaskDrawer task={selectedTask} onClose={handleCloseDrawer} />
         )}
+        {/* AddIssueModal 모달 */}
+        <AddIssueModal open={showAddModal} onOpenChange={setShowAddModal} projectId={projectId} />
       </main>
     </div>
   );
