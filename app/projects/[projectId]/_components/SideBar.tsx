@@ -16,13 +16,14 @@ import {
     TableOfContents,
     Code,
 } from "lucide-react";
+import Link from "next/link";
+import { getApiUrl } from "@/lib/api";
 
 import {
     Collapsible,
     CollapsibleContent,
     CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { getApiUrl } from "@/lib/api";
 
 interface Project {
     id: number;
@@ -166,27 +167,34 @@ export default function SideBar() {
                         </CollapsibleTrigger>
                         <CollapsibleContent>
                             <div className="ml-6 space-y-1">
-                                {projects.map((project) => (
-                                    <a
-                                        key={project.id}
-                                        href={`/projects/${project.id}`}
-                                        className="flex items-center justify-between p-2 text-sm hover:bg-accent hover:text-accent-foreground rounded-md"
-                                    >
-                                        <span className="truncate">
-                                            {project.name}
-                                        </span>
-                                        <span
-                                            className={`h-2 w-2 rounded-full ${
-                                                project.status === "active"
-                                                    ? "bg-green-500"
-                                                    : project.status ===
-                                                      "completed"
-                                                    ? "bg-blue-500"
-                                                    : "bg-yellow-500"
-                                            }`}
-                                        />
-                                    </a>
-                                ))}
+                                {loading ? (
+                                    <div className="text-xs text-muted-foreground">불러오는 중...</div>
+                                ) : error ? (
+                                    <div className="text-xs text-red-500">{error}</div>
+                                ) : projects.length === 0 ? (
+                                    <div className="text-xs text-muted-foreground">프로젝트가 없습니다.</div>
+                                ) : (
+                                    projects.map((project) => (
+                                        <Link
+                                            key={project.id}
+                                            href={`/projects/${project.id}/summary`}
+                                            className="flex items-center justify-between p-2 text-sm hover:bg-accent hover:text-accent-foreground rounded-md"
+                                        >
+                                            <span className="truncate">
+                                                {project.name}
+                                            </span>
+                                            <span
+                                                className={`h-2 w-2 rounded-full ${
+                                                    project.status === "ACTIVE"
+                                                        ? "bg-green-500"
+                                                        : project.status === "COMPLETED"
+                                                        ? "bg-blue-500"
+                                                        : "bg-yellow-500"
+                                                }`}
+                                            />
+                                        </Link>
+                                    ))
+                                )}
                             </div>
                         </CollapsibleContent>
                     </div>
