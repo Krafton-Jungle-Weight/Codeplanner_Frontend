@@ -31,51 +31,15 @@ interface Project {
     status: string;
 }
 
-const menuItems = [
-    {
-        title: "내 이슈",
-        icon: AlertCircle,
-        url: "my-issues",
-        badge: "12",
-    },
-    {
-        title: "요약",
-        icon: Globe,
-        url: "summary",
-    },
-    {
-        title: "타임라인",
-        icon: ChartNoAxesGantt,
-        url: "timeline",
-    },
-    {
-        title: "보드",
-        icon: Kanban,
-        url: "board",
-    },
-    {
-        title: "목록",
-        icon: TableOfContents,
-        url: "list",
-    },
-    {
-        title: "코드",
-        icon: Code,
-        url: "code",
-    },
-    {
-        title: "설정",
-        icon: Settings,
-        url: "settings",
-    },
-];
-
 export default function SideBar() {
     const [projects, setProjects] = React.useState<Project[]>([]);
     const [loading, setLoading] = React.useState<boolean>(true);
     const [error, setError] = React.useState<string | null>(null);
     const [isProjectsOpen, setIsProjectsOpen] = React.useState(true);
     const pathname = usePathname();
+    const match = pathname.match(/\/projects\/([^/]+)/);
+    const projectId = match ? match[1] : null;
+    const [myIssueCount, setMyIssueCount] = React.useState<number | null>(null);
 
     React.useEffect(() => {
         async function fetchProjects() {
@@ -115,6 +79,64 @@ export default function SideBar() {
         }
         fetchProjects();
     }, []);
+
+    React.useEffect(() => {
+    const fetchMyIssueCount = async () => {
+      try {
+        const res = await fetch(
+          `${getApiUrl()}/projects/${projectId}/my-issues-count`,
+          {
+            credentials: "include", // 👈 요거 넣어야 쿠키(JWT) 같이 감!
+          }
+        );
+        if (!res.ok) throw new Error("Failed to fetch count");
+        const data = await res.json();
+        setMyIssueCount(data.count);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchMyIssueCount();
+  }, [projectId]);
+
+  const menuItems = [
+    {
+        title: "내 이슈",
+        icon: AlertCircle,
+        url: "my-issues",
+        badge: myIssueCount !== null ? String(myIssueCount) : undefined,
+    },
+    {
+        title: "요약",
+        icon: Globe,
+        url: "summary",
+    },
+    {
+        title: "타임라인",
+        icon: ChartNoAxesGantt,
+        url: "timeline",
+    },
+    {
+        title: "보드",
+        icon: Kanban,
+        url: "board",
+    },
+    {
+        title: "목록",
+        icon: TableOfContents,
+        url: "list",
+    },
+    {
+        title: "코드",
+        icon: Code,
+        url: "code",
+    },
+    {
+        title: "설정",
+        icon: Settings,
+        url: "settings",
+    },
+];
 
     return (
         <div className="w-64 border-r bg-background text-foreground h-screen overflow-y-auto">

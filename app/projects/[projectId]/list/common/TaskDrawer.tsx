@@ -27,7 +27,6 @@ export default function TaskDrawer({
   // 로딩 및 에러 상태값 정의
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const apiUrl = getApiUrl();
 
   // 폼 값 변경해주는 핸들러
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -62,6 +61,23 @@ export default function TaskDrawer({
       setError(err.message || "저장 중 오류 발생"); // 저장 실패시 오류
     } finally {
       // UI 로딩 실행 종료 -> setLoading
+      setLoading(false);
+    }
+  };
+
+  // 삭제 버튼 클릭시 DELETE 요청
+  const handleDelete = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      await fetch(`${getApiUrl()}/projects/${task.project_id}/issues/${task.id}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+      });
+      onClose(); // 삭제 후 drawer 닫기
+    } catch (err: any) {
+      setError(err.message || "삭제 중 오류 발생");
+    } finally {
       setLoading(false);
     }
   };
@@ -190,7 +206,14 @@ export default function TaskDrawer({
           </div>
           {error && <div className="text-red-500 text-sm">{error}</div>}
         </div>
-        <div className="p-4 border-t border-gray-200 flex justify-end bg-gray-50">
+        <div className="p-4 border-t border-gray-200 flex justify-end gap-2 bg-gray-50">
+          <button
+            onClick={handleDelete}
+            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-medium disabled:opacity-50"
+            disabled={loading}
+          >
+            삭제
+          </button>
           <button
             // 버튼 클릭시 저장
             onClick={handleSave}
