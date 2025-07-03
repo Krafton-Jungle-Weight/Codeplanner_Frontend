@@ -12,7 +12,6 @@ export default function EmailVerifiedPage() {
       const verifyToken = searchParams.get("verifyToken");
       console.log("email", email);
       console.log("verifyToken", verifyToken);
-
       // URL 경로 파라미터로 요청
       const response = await fetch(
         `${getApiUrl()}/user/email-verify/${encodeURIComponent(
