@@ -301,7 +301,7 @@ export default function TaskDrawer({
         setError("");
         try {
             await fetch(
-                `${getApiUrl()}/projects/${task.project_id}/${task.id}`,
+                `${getApiUrl()}/projects/${task.project_id}/issues/${task.id}`,
                 {
                     method: "DELETE",
                     headers: { "Content-Type": "application/json" },
