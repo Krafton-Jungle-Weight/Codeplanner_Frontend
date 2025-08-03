@@ -292,7 +292,7 @@ CMD ["npm", "start"]
 
 - **이슈 리포트**: [GitHub Issues](https://github.com/your-repo/issues)
 - **문서**: [Wiki](https://github.com/your-repo/wiki)
-- **이메일**: support@codeplanner.com
+- **이메일**: codeplanner0@gmail.com
 
 ## 🙏 감사의 말
 
