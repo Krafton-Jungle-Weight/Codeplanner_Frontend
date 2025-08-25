@@ -1,0 +1,11 @@
+# 파일 이름: frontend-configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: frontend-config
+data:
+  # 테스트 환경을 위한 값으로 변경
+  NEXT_PUBLIC_API_URL: "http://backend-service:5000"
+  LOG_LEVEL: "debug"
+  NEXT_PUBLIC_ENV: "development" # 테스트 환경이므로 development로 변경
+  NEXT_PUBLIC_GITHUB_CLIENT_ID: "Ov23lijeWMuKS4KS6a78" # 이 값은 노출되어도 괜찮습니다.

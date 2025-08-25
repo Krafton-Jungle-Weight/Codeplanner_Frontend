@@ -1,0 +1,35 @@
+# 파일 이름: frontend-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: my-frontend
+  template:
+    metadata:
+      labels:
+        app: my-frontend
+    spec:
+      containers:
+      - name: frontend-container
+        image: my-frontend:test
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 3000
+        # 환경 변수 설정
+        envFrom:
+        - configMapRef:
+            # frontend-config ConfigMap의 모든 데이터를 환경변수로 가져옵니다.
+            name: frontend-config
+        env:
+        - name: GITHUB_CLIENT_SECRET # 기존에 있던 환경 변수
+          valueFrom:
+            secretKeyRef:
+              # github-secret Secret에서 값을 가져옵니다.
+              name: github-secret
+              key: GITHUB_CLIENT_SECRET
+        - name: NEXT_PUBLIC_API_URL
+          value: "http://43.202.166.254:31500"
